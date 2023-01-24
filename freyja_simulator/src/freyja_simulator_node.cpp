@@ -183,6 +183,7 @@ void GenericRobot::manager_process()
 class FreyjaSimulator : public rclcpp::Node
 {
   int num_robots_;
+  long int seed_;
   std::vector<long int> robot_num_range_;
   std::vector<double> spawn_limits_xy_;
   
@@ -215,7 +216,7 @@ class FreyjaSimulator : public rclcpp::Node
     rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr rviz_obstmarker_pub_;
     void simulation_setup();
     
-    void create_robots( int );
+    void create_robots( int, long int );
     void proper_shutdown();
     bool collides(const GenericRobot&, const GenericRobot& );
 
@@ -227,6 +228,7 @@ FreyjaSimulator::~FreyjaSimulator()
 
 FreyjaSimulator::FreyjaSimulator() : Node( "freyja_sim" )
 {
+  declare_parameter<long int>("seed", 0);
   declare_parameter<std::vector<long int>>( "robot_num_range", std::vector<long int>({3, 7}) );
   declare_parameter<std::vector<double>>( "spawn_limits_xy", std::vector<double>({-2.0, 2.0}) );
   declare_parameter<double>("sim_rate", 50.0);
@@ -242,6 +244,7 @@ FreyjaSimulator::FreyjaSimulator() : Node( "freyja_sim" )
   int robots_type = 0;
   get_parameter( "robot_num_range", robot_num_range_ );
   get_parameter( "spawn_limits_xy", spawn_limits_xy_ );
+  get_parameter( "seed", seed_ );
   get_parameter( "sim_rate", refresh_rate );
   get_parameter( "topic_rate", topic_rate );
   get_parameter( "enable_collisions", enable_collisions_ );
@@ -249,6 +252,7 @@ FreyjaSimulator::FreyjaSimulator() : Node( "freyja_sim" )
   get_parameter( "obst_pos_list", obst_pos_list_ );
 
   // pre-setup
+  printf( "Current seed: %ld\n", seed_ );
   num_robots_ = int( robot_num_range_[1] - robot_num_range_[0] + 1 );
   printf( "Number of robots: %d\n", num_robots_ );
   assert( num_robots_ > 0 );
@@ -262,7 +266,7 @@ FreyjaSimulator::FreyjaSimulator() : Node( "freyja_sim" )
     robots_type = 1;
 
   // instantiate all robots
-  create_robots( robots_type );
+  create_robots( robots_type, seed_ );
 
   // set up broadcaster
   tf_broadcaster_ = std::make_unique<tf2_ros::TransformBroadcaster>(*this);
@@ -281,10 +285,11 @@ FreyjaSimulator::FreyjaSimulator() : Node( "freyja_sim" )
   RCLCPP_INFO( get_logger(), "Simulator Ready!" );
 }
 
-void FreyjaSimulator::create_robots( int robots_type )
+void FreyjaSimulator::create_robots( int robots_type, long int seed )
 {
-  std::random_device rd;
-  std::default_random_engine rand_engine(rd());
+  // std::random_device rd; // instead using a seed parameter
+  std::default_random_engine rand_engine(seed);
+  rand_engine.seed(seed);
   std::uniform_real_distribution<> xpos_distrib(spawn_limits_xy_[0], spawn_limits_xy_[1]);
   std::uniform_real_distribution<> ypos_distrib(spawn_limits_xy_[0], spawn_limits_xy_[1]);
   std::uniform_real_distribution<> theta_dist(-3.14, 3.14);
