@@ -199,6 +199,7 @@ class FreyjaSimulator : public rclcpp::Node
 
   // global visualization obstacles
   std::vector<double> obst_pos_list_;
+  std::vector<double> obst_radii_list_;
   visualization_msgs::msg::MarkerArray obst_markers_;
 
   std::unique_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
@@ -250,6 +251,7 @@ FreyjaSimulator::FreyjaSimulator() : Node( "freyja_sim" )
   get_parameter( "enable_collisions", enable_collisions_ );
   get_parameter( "robots_type", robot_type_str );
   get_parameter( "obst_pos_list", obst_pos_list_ );
+  get_parameter( "obst_radii_list", obst_radii_list_ );
 
   // pre-setup
   printf( "Current seed: %ld\n", seed_ );
@@ -338,8 +340,8 @@ void FreyjaSimulator::simulation_setup()
   robot_markers_.points.resize(num_robots_);
 
   // set up visualization for obstacles
-  if( obst_pos_list_.size()%2 != 0 )
-    printf( "WARN: Obstacles list must be even sized: [x1 y1 x2 y2 ..]. Skipping!\n" );
+  if( obst_pos_list_.size()%2 != 0 || obst_radii_list_.size() != obst_pos_list_.size()/2 )
+    printf( "WARN: Obstacles list must be even sized: [x1 y1 x2 y2 ..] and radii must match number of obstacles. Skipping!\n" );
   else
   {
     std::cout << std::endl;
@@ -355,6 +357,7 @@ void FreyjaSimulator::simulation_setup()
     {
       ob.pose.position.x = obst_pos_list_[idx];
       ob.pose.position.y = obst_pos_list_[idx+1];
+      ob.scale.x = ob.scale.y = ob.scale.z = obst_radii_list_[idx] * 2.0;
       ob.pose.position.z = 0.25;
       ob.pose.orientation.w = 1.0;
       ob.id++;

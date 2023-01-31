@@ -18,3 +18,4 @@ launch:
       - { name:   "enable_collisions",  value:  false }            # naive quadratic collision handling
       - { name:   "robots_type",        value:  "holonomic" }     # holonomic or diffdrive
       - { name:   "obst_pos_list",      value:  [0.7, 0.0, 0.0, 0.0] }
+      - { name:   "obst_radii_list",    value:  [0.25, 0.25] }
