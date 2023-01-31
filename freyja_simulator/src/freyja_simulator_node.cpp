@@ -239,7 +239,8 @@ FreyjaSimulator::FreyjaSimulator() : Node( "freyja_sim" )
   declare_parameter<bool>( "enable_collisions", false );
   declare_parameter<std::string>( "robots_type", "diffdrive" );
   declare_parameter<std::vector<double>>( "obst_pos_list", std::vector<double>({-1.0}) );
-  
+  declare_parameter<std::vector<double>>( "obst_radii_list", std::vector<double>({-1.0}) );
+
   double refresh_rate, topic_rate;
   std::string robot_type_str;
   int robots_type = 0;
