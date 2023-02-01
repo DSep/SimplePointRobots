@@ -345,23 +345,27 @@ void FreyjaSimulator::simulation_setup()
     printf( "WARN: Obstacles list must be even sized: [x1 y1 x2 y2 ..] and radii must match number of obstacles. Skipping!\n" );
   else
   {
-    std::cout << std::endl;
-    visualization_msgs::msg::Marker ob;
-    ob.color.a = 0.42;
-    ob.color.r = ob.color.g = ob.color.b = 0.8;
-    ob.scale.x = ob.scale.y = ob.scale.z = 0.5;
-    ob.header.frame_id = "map";
-    ob.header.stamp = now();
-    ob.type = visualization_msgs::msg::Marker::CYLINDER;
-    ob.id = 100;
+    printf( "Adding %ld obstacles with %ld radii \n", obst_pos_list_.size()/2, obst_radii_list_.size());
+    std::cout << "Flushing stdout buffer" << std::endl;
+    int obid = 100;
     for( unsigned int idx=0; idx<obst_pos_list_.size(); idx+=2 )
     {
+      std::cout << "Adding obstacle " << obst_pos_list_[idx] << " with radius " << obst_radii_list_[idx/2] << std::endl;
+      // printf( "Adding obstacle: %lf, %lf\n", obst_pos_list_[idx], obst_pos_list_[idx+1] );
+      visualization_msgs::msg::Marker ob;
+      ob.color.a = 0.42;
+      ob.color.r = ob.color.g = ob.color.b = 0.8;
+      ob.scale.x = ob.scale.y = ob.scale.z = 0.5;
+      ob.header.frame_id = "map";
+      ob.header.stamp = now();
+      ob.type = visualization_msgs::msg::Marker::CYLINDER;
+      ob.id = obid + idx;
       ob.pose.position.x = obst_pos_list_[idx];
       ob.pose.position.y = obst_pos_list_[idx+1];
-      ob.scale.x = ob.scale.y = ob.scale.z = obst_radii_list_[idx] * 2.0;
+      ob.scale.x = ob.scale.y = ob.scale.z = obst_radii_list_[idx/2] * 2.0;
       ob.pose.position.z = 0.25;
       ob.pose.orientation.w = 1.0;
-      ob.id++;
+      // ob.id++;
       obst_markers_.markers.push_back( ob );
     }
     rviz_obstmarker_pub_ -> publish( obst_markers_ );
